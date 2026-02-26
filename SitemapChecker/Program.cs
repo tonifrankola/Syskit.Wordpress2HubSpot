@@ -20,7 +20,17 @@ builder.WebHost.ConfigureKestrel(options =>
 builder.Services.AddControllers();
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<SitemapCheckerService>();
-builder.Services.AddSingleton<ICacheService, FileCacheService>();
+
+// Register cache service based on configuration
+var useAzureBlob = builder.Configuration.GetValue<bool>("CacheService:UseAzureBlob");
+if (useAzureBlob)
+{
+    builder.Services.AddSingleton<ICacheService, BlobCacheService>();
+}
+else
+{
+    builder.Services.AddSingleton<ICacheService, FileCacheService>();
+}
 
 // Add CORS
 builder.Services.AddCors(options =>

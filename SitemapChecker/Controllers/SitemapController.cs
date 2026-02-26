@@ -273,35 +273,12 @@ public class SitemapController : ControllerBase
 
             // STEP 2: Get all sitemaps and pages
             var sitemapUrls = await _sitemapChecker.GetAllSitemapUrlsAsync();
-            
+
             var allPages = new List<(string url, DateTime? lastModified)>();
             foreach (var sitemapUrl in sitemapUrls)
             {
                 var pages = await _sitemapChecker.GetPagesFromSitemapAsync(sitemapUrl);
                 allPages.AddRange(pages);
-                
-                if (allPages.Count >= 10)
-                {
-                    break;
-                }
-            }
-
-            if (allPages.Count < 10)
-            {
-                for (int i = 0; i < sitemapUrls.Count; i++)
-                {
-                    if (allPages.Count >= 10) break;
-                    var pages = await _sitemapChecker.GetPagesFromSitemapAsync(sitemapUrls[i]);
-                    allPages.AddRange(pages);
-                }
-            }
-            else
-            {
-                foreach (var sitemapUrl in sitemapUrls.Skip(1))
-                {
-                    var pages = await _sitemapChecker.GetPagesFromSitemapAsync(sitemapUrl);
-                    allPages.AddRange(pages);
-                }
             }
 
             // Remove duplicates and already processed root
