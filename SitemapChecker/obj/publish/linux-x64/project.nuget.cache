@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "qEMfOacJ2aY=",
+  "success": true,
+  "projectFilePath": "C:\\Sources\\CRM\\Syskit.Wordpress2HubSpot\\SitemapChecker\\SitemapChecker.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\ToniFrankola\\.nuget\\packages\\htmlagilitypack\\1.11.61\\htmlagilitypack.1.11.61.nupkg.sha512",
+    "C:\\Users\\ToniFrankola\\.nuget\\packages\\microsoft.netcore.app.host.linux-x64\\8.0.23\\microsoft.netcore.app.host.linux-x64.8.0.23.nupkg.sha512"
+  ],
+  "logs": []
+}

@@ -1,0 +1,9 @@
+C:\Sources\CRM\Syskit.Wordpress2HubSpot\SitemapChecker\obj\Release\net8.0\linux-x64\PubTmp\Out\SitemapCheckerApp
+C:\Sources\CRM\Syskit.Wordpress2HubSpot\SitemapChecker\obj\Release\net8.0\linux-x64\PubTmp\Out\appsettings.Development.json
+C:\Sources\CRM\Syskit.Wordpress2HubSpot\SitemapChecker\obj\Release\net8.0\linux-x64\PubTmp\Out\appsettings.json
+C:\Sources\CRM\Syskit.Wordpress2HubSpot\SitemapChecker\obj\Release\net8.0\linux-x64\PubTmp\Out\cache\sitemap-results.json
+C:\Sources\CRM\Syskit.Wordpress2HubSpot\SitemapChecker\obj\Release\net8.0\linux-x64\PubTmp\Out\SitemapCheckerApp.dll
+C:\Sources\CRM\Syskit.Wordpress2HubSpot\SitemapChecker\obj\Release\net8.0\linux-x64\PubTmp\Out\SitemapCheckerApp.deps.json
+C:\Sources\CRM\Syskit.Wordpress2HubSpot\SitemapChecker\obj\Release\net8.0\linux-x64\PubTmp\Out\SitemapCheckerApp.runtimeconfig.json
+C:\Sources\CRM\Syskit.Wordpress2HubSpot\SitemapChecker\obj\Release\net8.0\linux-x64\PubTmp\Out\SitemapCheckerApp.pdb
+C:\Sources\CRM\Syskit.Wordpress2HubSpot\SitemapChecker\obj\Release\net8.0\linux-x64\PubTmp\Out\HtmlAgilityPack.dll
