@@ -13,6 +13,7 @@ public class PageCheckResult
     public string NewOgTitle { get; set; } = string.Empty;
     public string TitleComparison { get; set; } = string.Empty;
     public string OgTitleComparison { get; set; } = string.Empty;
+    public bool HasLdJson { get; set; }
     public DateTime? LastModified { get; set; }
     public string LastModifiedFormatted => LastModified?.ToString("yyyy-MM-dd") ?? string.Empty;
     public DateTime CheckedAt { get; set; } = DateTime.UtcNow;

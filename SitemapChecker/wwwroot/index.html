@@ -99,6 +99,10 @@
             border-left-color: #FF5164;
         }
 
+        .summary-card.schema {
+            border-left-color: #FF6B00;
+        }
+
         .card-label {
             font-size: 0.8125rem;
             color: #6b7280;
@@ -283,7 +287,6 @@
             border-radius: 12px;
             font-size: 0.75rem;
             font-weight: 600;
-            text-transform: uppercase;
         }
 
         .status-ok {
@@ -463,6 +466,11 @@
                 <div class="card-value" id="chainCount">0</div>
                 <div class="card-percentage" id="chainPercent">0%</div>
             </div>
+            <div class="summary-card schema" data-filter="MissingSchema">
+                <div class="card-label">Missing Schema</div>
+                <div class="card-value" id="missingSchemaCount">0</div>
+                <div class="card-percentage" id="missingSchemaPercent">0%</div>
+            </div>
         </div>
 
         <div class="progress-container" id="progressContainer">
@@ -488,6 +496,7 @@
                 <button class="filter-btn" data-filter="Missing">Missing</button>
                 <button class="filter-btn" data-filter="Redirect301">301 Redirect</button>
                 <button class="filter-btn" data-filter="Redirect301Chain">301 Chain</button>
+                <button class="filter-btn" data-filter="MissingSchema">Missing Schema</button>
             </div>
         </div>
 
@@ -500,6 +509,7 @@
                         <th class="sortable" data-column="status">Status</th>
                         <th class="sortable" data-column="titleComparison">Title</th>
                         <th class="sortable" data-column="ogTitleComparison">og:title</th>
+                        <th class="sortable" data-column="hasLdJson">Schema markup</th>
                         <th class="sortable" data-column="lastModified">Original Last Modified</th>
                         <th class="sortable" data-column="checkedAt">Checked At</th>
                         <th>Actions</th>
@@ -507,7 +517,7 @@
                 </thead>
                 <tbody id="tableBody">
                     <tr>
-                        <td colspan="8" class="loading-message">
+                        <td colspan="9" class="loading-message">
                             <span class="spinner"></span>
                             Loading sitemaps...
                         </td>
@@ -530,6 +540,14 @@
             4: 'Different'
         };
 
+        const statusDisplayMap = {
+            'OK': 'Ok',
+            'Missing': 'Missing',
+            'Redirect301': '301 Redirect',
+            'Redirect301Chain': '301 Chain',
+            'Different': 'Different'
+        };
+
         function updateSummary() {
             const summary = {
                 total: results.length,
@@ -537,7 +555,8 @@
                 different: results.filter(r => r.status === 4).length,
                 missing: results.filter(r => r.status === 1).length,
                 redirect: results.filter(r => r.status === 2).length,
-                chain: results.filter(r => r.status === 3).length
+                chain: results.filter(r => r.status === 3).length,
+                missingSchema: results.filter(r => !r.hasLdJson).length
             };
 
             document.getElementById('totalCount').textContent = summary.total;
@@ -546,6 +565,7 @@
             document.getElementById('missingCount').textContent = summary.missing;
             document.getElementById('redirectCount').textContent = summary.redirect;
             document.getElementById('chainCount').textContent = summary.chain;
+            document.getElementById('missingSchemaCount').textContent = summary.missingSchema;
 
             // Calculate and display percentages
             if (summary.total > 0) {
@@ -554,12 +574,14 @@
                 document.getElementById('missingPercent').textContent = `${Math.round((summary.missing / summary.total) * 100)}%`;
                 document.getElementById('redirectPercent').textContent = `${Math.round((summary.redirect / summary.total) * 100)}%`;
                 document.getElementById('chainPercent').textContent = `${Math.round((summary.chain / summary.total) * 100)}%`;
+                document.getElementById('missingSchemaPercent').textContent = `${Math.round((summary.missingSchema / summary.total) * 100)}%`;
             } else {
                 document.getElementById('okPercent').textContent = '0%';
                 document.getElementById('differentPercent').textContent = '0%';
                 document.getElementById('missingPercent').textContent = '0%';
                 document.getElementById('redirectPercent').textContent = '0%';
                 document.getElementById('chainPercent').textContent = '0%';
+                document.getElementById('missingSchemaPercent').textContent = '0%';
             }
         }
 
@@ -584,9 +606,11 @@
 
             const row = document.createElement('tr');
             const statusText = statusMap[result.status];
+            const statusDisplay = statusDisplayMap[statusText] || statusText;
             row.dataset.status = statusText;
             row.dataset.pageUrl = result.existingPageUrl;
             row.dataset.lastModified = result.lastModified || '';
+            row.dataset.hasSchema = result.hasLdJson ? 'true' : 'false';
             
             const statusClass = getStatusClass(result.status);
             
@@ -598,9 +622,10 @@
             row.innerHTML = `
                 <td><a href="${result.existingPageUrl}" target="_blank">${result.existingPage}</a></td>
                 <td>${result.newPageUrl ? `<a href="${result.newPageUrl}" target="_blank">${result.newPage}</a>` : result.newPage}</td>
-                <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                <td><span class="status-badge ${statusClass}">${statusDisplay}</span></td>
                 <td><span class="comparison-badge comparison-${titleComparison.toLowerCase()}">${titleComparison}</span></td>
                 <td><span class="comparison-badge comparison-${ogTitleComparison.toLowerCase()}">${ogTitleComparison}</span></td>
+                <td>${result.hasLdJson ? '<span class="status-badge status-ok">Yes</span>' : '<span class="status-badge status-missing">No</span>'}</td>
                 <td>${lastModified}</td>
                 <td>${checkedAt}</td>
                 <td><button class="refresh-btn" onclick="refreshSinglePage(this)">↻ Refresh</button></td>
@@ -618,7 +643,14 @@
             
             rows.forEach(row => {
                 // Check filter match
-                const statusMatch = activeFilter === 'all' || row.dataset.status === activeFilter;
+                let statusMatch;
+                if (activeFilter === 'all') {
+                    statusMatch = true;
+                } else if (activeFilter === 'MissingSchema') {
+                    statusMatch = row.dataset.hasSchema === 'false';
+                } else {
+                    statusMatch = row.dataset.status === activeFilter;
+                }
                 
                 // Check search match (search in both existing and new page URLs)
                 let searchMatch = true;
@@ -672,7 +704,7 @@
             
             document.getElementById('tableBody').innerHTML = `
                 <tr>
-                    <td colspan="8" class="loading-message">
+                    <td colspan="9" class="loading-message">
                         <span class="spinner"></span>
                         ${useCache ? 'Loading from cache or checking pages...' : 'Checking all pages...'}
                     </td>
@@ -827,7 +859,7 @@
                 // Clear table and show message
                 document.getElementById('tableBody').innerHTML = `
                     <tr>
-                        <td colspan="8" class="loading-message">
+                        <td colspan="9" class="loading-message">
                             Cache cleared. Click "Refresh All" or "+ Find New Pages" to start checking.
                         </td>
                     </tr>
@@ -969,23 +1001,26 @@
                 
                 // Update the row with new data
                 const statusText = statusMap[result.status];
+                const statusDisplay = statusDisplayMap[statusText] || statusText;
                 const statusClass = getStatusClass(result.status);
                 const titleComparison = result.titleComparison || '';
                 const ogTitleComparison = result.ogTitleComparison || '';
                 const lastModifiedFormatted = result.lastModifiedFormatted || '';
                 const checkedAtFormatted = result.checkedAtFormatted || '';
-                
+
                 // Update dataset attributes
                 row.dataset.status = statusText;
                 row.dataset.pageUrl = result.existingPageUrl;
                 row.dataset.lastModified = result.lastModified || '';
-                
+                row.dataset.hasSchema = result.hasLdJson ? 'true' : 'false';
+
                 row.innerHTML = `
                     <td><a href="${result.existingPageUrl}" target="_blank">${result.existingPage}</a></td>
                     <td>${result.newPageUrl ? `<a href="${result.newPageUrl}" target="_blank">${result.newPage}</a>` : result.newPage}</td>
-                    <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                    <td><span class="status-badge ${statusClass}">${statusDisplay}</span></td>
                     <td><span class="comparison-badge comparison-${titleComparison.toLowerCase()}">${titleComparison}</span></td>
                     <td><span class="comparison-badge comparison-${ogTitleComparison.toLowerCase()}">${ogTitleComparison}</span></td>
+                    <td>${result.hasLdJson ? '<span class="status-badge status-ok">Yes</span>' : '<span class="status-badge status-missing">No</span>'}</td>
                     <td>${lastModifiedFormatted}</td>
                     <td>${checkedAtFormatted}</td>
                     <td><button class="refresh-btn" onclick="refreshSinglePage(this)">↻ Refresh</button></td>
@@ -1184,7 +1219,7 @@
                         'No data yet. Click "Refresh All" to check all pages.';
                     document.getElementById('tableBody').innerHTML = `
                         <tr>
-                            <td colspan="8" class="loading-message">
+                            <td colspan="9" class="loading-message">
                                 No data available. Click "Refresh All" or "+ Find New Pages" to start.
                             </td>
                         </tr>

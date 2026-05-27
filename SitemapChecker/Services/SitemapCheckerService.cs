@@ -103,7 +103,7 @@ public class SitemapCheckerService
         };
 
         // Get title and og:title from existing page
-        var (existingTitle, existingOgTitle) = await GetPageMetadataAsync(existingPageUrl);
+        var (existingTitle, existingOgTitle, _) = await GetPageMetadataAsync(existingPageUrl);
         result.ExistingTitle = existingTitle;
         result.ExistingOgTitle = existingOgTitle;
 
@@ -141,9 +141,10 @@ public class SitemapCheckerService
             }
 
             // Get title and og:title from final page
-            var (newTitle, newOgTitle) = await GetPageMetadataAsync(finalUrl);
+            var (newTitle, newOgTitle, hasLdJson) = await GetPageMetadataAsync(finalUrl);
             result.NewTitle = newTitle;
             result.NewOgTitle = newOgTitle;
+            result.HasLdJson = hasLdJson;
 
             // Compare titles
             result.TitleComparison = string.Equals(result.ExistingTitle, result.NewTitle, StringComparison.OrdinalIgnoreCase) 
@@ -203,7 +204,7 @@ public class SitemapCheckerService
         }
     }
 
-    private async Task<(string title, string ogTitle)> GetPageMetadataAsync(string url)
+    private async Task<(string title, string ogTitle, bool hasLdJson)> GetPageMetadataAsync(string url)
     {
         try
         {
@@ -213,12 +214,14 @@ public class SitemapCheckerService
 
             var title = doc.DocumentNode.SelectSingleNode("//title")?.InnerText?.Trim() ?? string.Empty;
             var ogTitle = doc.DocumentNode.SelectSingleNode("//meta[@property='og:title']")?.GetAttributeValue("content", string.Empty) ?? string.Empty;
+            var hasLdJson = doc.DocumentNode.Descendants("script")
+                .Any(s => s.GetAttributeValue("type", "").Equals("application/ld+json", StringComparison.OrdinalIgnoreCase));
 
-            return (title, ogTitle);
+            return (title, ogTitle, hasLdJson);
         }
         catch
         {
-            return (string.Empty, string.Empty);
+            return (string.Empty, string.Empty, false);
         }
     }
 
@@ -320,9 +323,10 @@ public class SitemapCheckerService
         };
 
         // Get metadata from new page
-        var (newTitle, newOgTitle) = await GetPageMetadataAsync(newPageUrl);
+        var (newTitle, newOgTitle, hasLdJson) = await GetPageMetadataAsync(newPageUrl);
         result.NewTitle = newTitle;
         result.NewOgTitle = newOgTitle;
+        result.HasLdJson = hasLdJson;
 
         // Check if page exists on old site
         var (statusCode, finalUrl, redirectCount) = await CheckUrlAsync(oldPageUrl);
@@ -333,7 +337,7 @@ public class SitemapCheckerService
             result.Status = PageStatus.OK;
             
             // Get metadata from old page
-            var (oldTitle, oldOgTitle) = await GetPageMetadataAsync(finalUrl);
+            var (oldTitle, oldOgTitle, _) = await GetPageMetadataAsync(finalUrl);
             result.ExistingTitle = oldTitle;
             result.ExistingOgTitle = oldOgTitle;
 
