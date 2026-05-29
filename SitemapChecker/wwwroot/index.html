@@ -19,7 +19,7 @@
         }
 
         .container {
-            max-width: 1400px;
+            max-width: 1800px;
             margin: 0 auto;
             padding: 20px;
         }
@@ -221,7 +221,7 @@
             background: #fff;
             border-radius: 8px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            overflow: hidden;
+            overflow-x: auto;
         }
 
         table {
@@ -271,6 +271,14 @@
             padding: 15px;
             border-bottom: 1px solid #ecf0f1;
             font-size: 0.875rem;
+            white-space: nowrap;
+        }
+
+        td:nth-child(1),
+        td:nth-child(2) {
+            max-width: 250px;
+            white-space: normal;
+            word-break: break-all;
         }
 
         tbody tr:hover {
